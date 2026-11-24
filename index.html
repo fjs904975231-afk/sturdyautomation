@@ -637,11 +637,6 @@ form{margin-top:24px}
       <div class="marquee"><div class="track" id="brandTrack"></div></div>
       <div class="wrap">
         <div class="brand-tools">
-          <span class="hint" id="brandCount">Showing 30 brands. Need something not listed? Ask us.</span>
-          <button class="btn btn-line btn-sm" data-open-brand-modal>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Upload brand logos
-          </button>
           <a class="link-arrow" href="#/brands">All brands
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
@@ -923,10 +918,6 @@ form{margin-top:24px}
     <div class="wrap" style="margin-top:46px">
       <div class="brand-grid" id="brandGrid"></div>
       <div class="brand-tools" style="margin-top:34px">
-        <button class="btn btn-dark btn-sm" data-open-brand-modal>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          Add / manage brand logos
-        </button>
         <a class="btn btn-line btn-sm" href="#/contact">Ask about a brand</a>
       </div>
     </div>
@@ -1112,31 +1103,7 @@ form{margin-top:24px}
   </div>
 </footer>
 
-<!-- ================= BRAND MODAL ================= -->
-<div class="modal" id="brandModal" role="dialog" aria-modal="true" aria-label="Manage brand logos">
-  <div class="backdrop" data-close-brand-modal></div>
-  <div class="panel">
-    <button class="close" data-close-brand-modal aria-label="Close">&times;</button>
-    <h3>Add brand logos</h3>
-    <p class="m-sub">Upload logo images and they appear in the scrolling brand strip immediately. This preview lasts for the current page session only.</p>
-    <label class="drop" for="brandFiles">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M12 3v12M7.5 8.5L12 4l4.5 4.5"/></svg>
-      <b>Click to choose logo images</b>
-      <span>PNG, JPG or SVG &mdash; transparent background works best</span>
-      <input id="brandFiles" type="file" accept="image/*" multiple>
-    </label>
-    <div class="snippet">
-      <label>Code for your index.html</label>
-      <textarea id="brandCode" readonly></textarea>
-      <p class="form-note">Copy this into the <b>BRANDS</b> list inside index.html, and put the logo files in <b>assets/brands/</b> with the same names.</p>
-    </div>
-    <div class="hint-box">To make logos permanent: save the files to <code>assets/brands/</code> in your website folder, add the entries shown above, then re-upload the folder to GitHub.</div>
-    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
-      <button class="btn btn-primary btn-sm" id="copyBrandCode">Copy code</button>
-      <button class="btn btn-line btn-sm" id="resetBrands">Reset to defaults</button>
-    </div>
-  </div>
-</div>
+<!-- (brand logo uploader removed — brand strip is curated from assets/brands/) -->
 
 <script>
 /* =====================================================
@@ -1415,9 +1382,6 @@ document.addEventListener('click', (e)=>{
     navigator.clipboard.writeText(txt).then(()=>toast('Copied: ' + txt)).catch(()=>toast('Copy failed — please copy manually'));
     return;
   }
-  // brand modal
-  if (e.target.closest('[data-open-brand-modal]')){ openBrandModal(); return; }
-  if (e.target.closest('[data-close-brand-modal]')){ $('#brandModal').classList.remove('open'); return; }
 });
 
 window.addEventListener('hashchange', route);
@@ -1433,49 +1397,6 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
 }
-
-/* =====================================================
-   BRAND LOGO UPLOADER
-   ===================================================== */
-function openBrandModal(){
-  $('#brandModal').classList.add('open');
-  $('#brandCode').value = BRANDS.map(b => b.img
-    ? `  { name: '${b.name}', img: 'assets/brands/${(b.fileName || b.name.toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.png')}' },`
-    : `  { name: '${b.name}' },`
-  ).join('\n');
-}
-
-$('#brandFiles') && $('#brandFiles').addEventListener('change', (e)=>{
-  const files = Array.from(e.target.files || []);
-  if (!files.length) return;
-  files.forEach((f)=>{
-    const name = f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g,' ').toUpperCase();
-    const reader = new FileReader();
-    reader.onload = (ev)=>{
-      BRANDS.push({ name: name, img: ev.target.result, fileName: f.name.replace(/\s+/g,'-').toLowerCase() });
-      renderBrands();
-      openBrandModal();
-    };
-    reader.readAsDataURL(f);
-  });
-  toast(files.length + ' logo(s) added to the strip');
-  e.target.value = '';
-});
-
-$('#copyBrandCode') && $('#copyBrandCode').addEventListener('click', ()=>{
-  const ta = $('#brandCode');
-  ta.select();
-  const txt = ta.value;
-  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast('Brand list copied'));
-  else { document.execCommand('copy'); toast('Brand list copied'); }
-});
-
-$('#resetBrands') && $('#resetBrands').addEventListener('click', ()=>{
-  BRANDS = DEFAULT_BRANDS.slice();
-  renderBrands();
-  openBrandModal();
-  toast('Brand list reset to defaults');
-});
 
 /* =====================================================
    CONTACT FORM
